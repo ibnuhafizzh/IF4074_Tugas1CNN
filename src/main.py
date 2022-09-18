@@ -1,12 +1,11 @@
 from layer import *
-import numpy as np
 from generateImage import *
 
-DATA = "/Users/mac/Documents/ITB/Semester7/ML/IF4074_Tugas1CNN/test"
+DATA_PATH = "./test"
 
 if __name__ == "__main__":
-    dataset_path = DATA
-    file_path, class_label, class_dictionary = read_dataset(dataset_path)
+    dataset_path = DATA_PATH
+    folder_path, class_label, class_dictionary = read_dataset(dataset_path)
     Layers = [
         ConvolutionLayer(3,10,2,0,2),
         Pooling(2,2,"max"),
@@ -15,8 +14,10 @@ if __name__ == "__main__":
         DenseLayer(4,"relu"),
         DenseLayer(1,"sigmoid")
     ]
-    matrix = list_img_to_matrix(file_path)[1]
-    print(matrix)
+
+    matrix_images = list_img_to_matrix(folder_path)
+    dummy_matrix = matrix_images[0]
+
     for layer in Layers:
-        matrix = layer.forward(matrix)
-    print(matrix)
+        dummy_matrix = layer.forward(dummy_matrix)
+    print("label :", dummy_matrix)
