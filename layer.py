@@ -2,8 +2,8 @@ from multiprocessing import pool
 from turtle import forward
 import numpy as np
 import common
-from tensorflow.keras import layers # for test
-import tensorflow as tf
+# from tensorflow.keras import layers # for test
+# import tensorflow as tf
 
 class DenseLayer:
     def __init__(self, n_unit, activation):
@@ -25,8 +25,40 @@ class DenseLayer:
             return np.maximum(multisum, 0)
 
 class ConvolutionLayer:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, nb_channel, nb_filter, filter_size, padding=0, stride=1):
+        self.nb_channel = nb_channel
+        self.nb_filter = nb_filter
+        self.filter_size = filter_size
+        self.padding = padding
+        self.stride = stride
+        self.weight = np.random.randn(nb_filter, nb_channel, filter_size, filter_size)
+        self.bias = np.zeros((nb_filter))
+    
+    def add_zero_padding(self, inputs):
+        w_pad = inputs.shape[1] + self.padding * 2
+        h_pad = inputs.shape[2] + self.padding * 2
+        
+        inputs_padded = np.zeros((inputs.shape[0], w_pad, h_pad))
+        for s in range(inputs.shape[0]):
+            inputs_padded[s, self.padding:w_pad-self.padding, self.padding:h_pad-self.padding] = inputs[s, :, :]
+
+        return inputs_padded
+    
+    def forward(self, inputs):
+        w, h = inputs.shape[1], inputs.shape[2]
+        v_w = int((w - self.filter_size + 2*self.padding)/self.stride + 1)
+        v_h = int((h - self.filter_size + 2*self.padding)/self.stride + 1)
+        
+        self.inputs = self.add_zero_padding(inputs)
+        featureMap = np.zeros((self.nb_filter, v_w, v_h))
+
+        for k in range(self.nb_filter):
+            for i in range(v_w):
+                for j in range(v_h):
+                    recField = self.inputs[:, i:i+self.filter_size, j:j+self.filter_size]
+                    featureMap[k, i, j] = np.sum(recField * self.weight[k, :, :, :] + self.bias[k])
+        
+        return featureMap
 
     def detector(self,input):
         return common.relu(input)
@@ -81,3 +113,8 @@ if __name__ == "__main__":
             ,[1,2,3,4]]])
     pool = Pooling(2,2,"max")
     print(pool.forward(arr1))
+
+    matrix = np.array([[[1,7,2],[11,1,23],[2,2,2]],[[1,5,2],[10,1,20],[4,2,4]],[[6,7,8],[12,4,6],[8,2,6]]])
+    conv = ConvolutionLayer(3, 2, 2, 1)
+    print(conv.forward(matrix))
+    
