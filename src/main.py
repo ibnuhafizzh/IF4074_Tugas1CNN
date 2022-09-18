@@ -20,4 +20,4 @@ if __name__ == "__main__":
 
     for layer in Layers:
         dummy_matrix = layer.forward(dummy_matrix)
-    print("label :", dummy_matrix)
+    print("Predict Result :", class_dictionary[str(int(dummy_matrix[0]))])

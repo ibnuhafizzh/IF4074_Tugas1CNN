@@ -10,7 +10,7 @@ def read_dataset(dataset_path):
     folder_list = sorted(folder_list)
     folder_path = []; class_label = np.ndarray(shape=(0)); class_dictionary = {}
     
-    for i in range(1, len(folder_list)):#loop for all class folders
+    for i in range(len(folder_list)):#loop for all class folders
         class_folder_path = os.path.join(dataset_path, folder_list[i])
         list_image_name = os.listdir(class_folder_path)
         list_image_name = sorted(list_image_name)
