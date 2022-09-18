@@ -1,16 +1,13 @@
-from multiprocessing import pool
-from turtle import forward
 import numpy as np
 import common
-# from tensorflow.keras import layers # for test
-# import tensorflow as tf
+
 
 class DenseLayer:
     def __init__(self, n_unit, activation):
         self.n_unit = n_unit
         self.activation = activation
         self.bias = np.zeros(n_unit)
-        self.weight = np.random.rand(n_unit)
+        self.weight = np.random.randn(n_unit)
 
     def forward(self,inputs):
         multisum = np.array([])
@@ -58,10 +55,10 @@ class ConvolutionLayer:
                     recField = self.inputs[:, i:i+self.filter_size, j:j+self.filter_size]
                     featureMap[k, i, j] = np.sum(recField * self.weight[k, :, :, :] + self.bias[k])
         
-        return featureMap
+        return self.detector(featureMap)
 
     def detector(self,input):
-        return common.relu(input)
+        return np.maximum(input, 0)
 
 class Pooling:
     def __init__(self,filter_size,stride_size,mode):
