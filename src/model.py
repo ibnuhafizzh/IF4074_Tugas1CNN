@@ -3,7 +3,7 @@ from layer import *
 from sklearn import metrics
 
 class Model:
-    def __init__(self, layers):
+    def __init__(self, layers=[]):
         self.layers = layers
     
     def save_model(self, namefile):
@@ -12,8 +12,17 @@ class Model:
     
     def load_model(self,namefile):
         with open(namefile, 'rb') as f:
-            temp = pickle.load(self.layers,  f, protocol=pickle.HIGHEST_PROTOCOL)
-        self.self.layers = temp.copy()
+            temp = pickle.load(f)
+        self.layers = temp.copy()
+    
+    def _forward(self,inputs):
+        out = inputs.copy()
+        result = [out]
+        for layer in self.layers:
+            out = layer.forward(out)
+            result.append(out)
+
+        return result
     
     def fit(self,features, target, batch_size, epoch, learn_rate, momentum=1):
         y = np.array([])
@@ -25,9 +34,8 @@ class Model:
             
             for b in range(batch_size):
                 current_idx = (batch_size * e + b) % len(features)
-                for layer in self.layers:
-                    res = layer.forward(features[current_idx])
-                current_output = res[len(res) - 1]
+                res = self._forward(features[current_idx])
+                current_output = res[len(res) - 1][0]
                 current_y = target[current_idx]
                 
                 dE = np.array([current_y - current_output]) * -1

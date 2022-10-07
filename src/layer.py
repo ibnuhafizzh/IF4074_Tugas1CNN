@@ -7,10 +7,17 @@ class DenseLayer:
         self.n_unit = n_unit
         self.activation = activation
         self.bias = np.zeros(n_unit)
-        self.weight = np.random.randn(n_unit)
+        self.weight = []
+        self.deltaW = np.zeros(n_unit)
+
+    def init_weights(self, n_inputs):
+        self.n_inputs = n_inputs
+        self.weight = np.random.randn(self.n_unit,n_inputs)
         self.deltaW = np.zeros((self.n_unit))
 
     def forward(self,inputs):
+        if len(self.weight) == 0:
+           self.init_weights(len(inputs))
         self.input = inputs
         multisum = np.array([])
         for i in range(self.n_unit):
@@ -28,11 +35,8 @@ class DenseLayer:
         sigm = common.sigmoid(inputs)
         return sigm * (1 - sigm)
     
-    def d_relu(self,inputs):
-        f = lambda x: 1 if x>=0 else 0
-        # inputs[inputs >= 0] = 1
-        # inputs[inputs < 0] = 0
-        return f(inputs)
+    def d_relu(self,input):
+        return 1.0 if input >= 0 else 0
 
     def d_act_funct(self,activation,inputs):
         if (activation=='sigmoid'):
@@ -44,17 +48,16 @@ class DenseLayer:
         derivative = np.array([])
         for i in self.output:
             derivative = np.append(derivative, self.d_act_funct(self.activation, i))
-
         self.deltaW += np.multiply(derivative, inputs)
         dE = np.matmul(inputs, self.weight)
         return dE
     
     def update_weights(self, learn_rate, momentum):
-        for i in range(self.n_units):
+        for i in range(self.n_unit):
             self.weight[i] = self.weight[i] - ((momentum * self.weight[i]) + (learn_rate * self.deltaW[i] * self.input))
 
         self.bias = self.bias - ((momentum * self.bias) + (learn_rate * self.deltaW))
-        self.deltaW = np.zeros((self.n_units))
+        self.deltaW = np.zeros((self.n_unit))
 
 class ConvolutionLayer:
     def __init__(self, nb_channel, nb_filter, filter_size, padding=0, stride=1):
@@ -186,6 +189,9 @@ class FlattenLayer:
     
     def backward(self, inputs):
         return inputs.reshape(self.channel, self.width, self.height)
+
+    def update_weights(self, learning_rate, momentum):
+        pass
 
 if __name__ == "__main__":
     # for test
