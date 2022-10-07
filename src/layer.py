@@ -10,6 +10,7 @@ class DenseLayer:
         self.weight = np.random.randn(n_unit)
 
     def forward(self,inputs):
+        self.input = inputs
         multisum = np.array([])
         for i in range(self.n_unit):
             multisum = np.append(multisum, 
@@ -17,9 +18,41 @@ class DenseLayer:
 
         if self.activation == 'sigmoid':
             matrixsigmoid = np.vectorize(common.sigmoid)
-            return matrixsigmoid(multisum)
+            self.output = matrixsigmoid(multisum)
         else:
-            return np.maximum(multisum, 0)
+            self.output = np.maximum(multisum, 0)
+        return self.output
+    
+    def d_sigmoid(self, inputs):
+        sigm = common.sigmoid(inputs)
+        return sigm * (1 - sigm)
+    
+    def d_relu(self,inputs):
+        inputs[inputs >= 0] = 1
+        inputs[inputs < 0] = 0
+        return inputs
+
+    def d_act_funct(self,activation,inputs):
+        if (activation=='sigmoid'):
+            return self.d_sigmoid(inputs)
+        else:
+            return self.d_relu(inputs)
+
+    def backward(self,inputs):
+        derivative = np.array([])
+        for i in self.output:
+            derivative = np.append(derivative, self.d_act_funct(self.activation, i))
+
+        self.deltaW += np.multiply(derivative, inputs)
+        dE = np.matmul(inputs, self.weight)
+        return dE
+    
+    def update_weights(self, learn_rate, momentum):
+        for i in range(self.n_units):
+            self.weight[i] = self.weight[i] - ((momentum * self.weight[i]) + (learn_rate * self.deltaW[i] * self.input))
+
+        self.bias = self.bias - ((momentum * self.bias) + (learn_rate * self.deltaW))
+        self.deltaW = np.zeros((self.n_units))
 
 class ConvolutionLayer:
     def __init__(self, nb_channel, nb_filter, filter_size, padding=0, stride=1):
@@ -145,8 +178,12 @@ class FlattenLayer:
         pass
 
     def forward(self, inputs):
+        self.channel, self.width, self.height = inputs.shape()
         output = inputs.flatten()
         return output
+    
+    def backward(self, inputs):
+        return inputs.reshape(self.channel, self.width, self.height)
 
 if __name__ == "__main__":
     # for test
