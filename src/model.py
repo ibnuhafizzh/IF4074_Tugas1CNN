@@ -15,6 +15,12 @@ class Model:
             temp = pickle.load(f)
         self.layers = temp.copy()
     
+    def forward(self, inputs):
+        out = inputs.copy()
+        for layer in self.layers:
+            out = layer.forward(out)
+        return out
+    
     def _forward(self,inputs):
         out = inputs.copy()
         result = [out]
