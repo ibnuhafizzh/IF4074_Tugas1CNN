@@ -93,6 +93,22 @@ class Pooling:
                                 b_pos*self.filter_size:(b_pos*self.filter_size + self.filter_size)
                                 ])
 
+    def backward(self, prev_errors):
+        F, W, H = self.input.shape
+        dx = np.zeros(self.input.shape)
+        for i in range(0, F):
+            for j in range(0, W, self._filter_size):
+                for k in range(0, H, self._filter_size):
+                    st = np.argmax(self.input[i, j : j + self._filter_size, k : k + self._filter_size])
+                    (idx, idy) = np.unravel_index(st, (self._filter_size, self._filter_size))
+                    if ((j + idx) < W and (k + idy) < H):
+                        dx[i, j + idx, k + idy] = prev_errors[i, int(j / self._filter_size) % prev_errors.shape[1], int(k / self._filter_size) % prev_errors.shape[2]]
+        return dx
+    
+    def update_weights(self, learning_rate):
+        # Todo
+        pass
+
 class FlattenLayer:
     def init(self):
         pass
