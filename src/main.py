@@ -16,8 +16,9 @@ if __name__ == "__main__":
     ]
 
     matrix_images = list_img_to_matrix(folder_path)
-    dummy_matrix = matrix_images[0]
+    dummy_matrix = matrix_images[20]
 
     for layer in Layers:
         dummy_matrix = layer.forward(dummy_matrix)
+    print("Picture: ",folder_path[20])
     print("Predict Result :", class_dictionary[str(int(dummy_matrix[0]))])
