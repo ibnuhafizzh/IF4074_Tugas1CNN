@@ -30,6 +30,8 @@ class ConvolutionLayer:
         self.stride = stride
         self.weight = np.random.randn(nb_filter, nb_channel, filter_size, filter_size)
         self.bias = np.zeros((nb_filter))
+        self.dw = np.zeros((nb_filter, nb_channel, filter_size, filter_size))
+        self.db = np.zeros((nb_filter))
     
     def add_zero_padding(self, inputs):
         w_pad = inputs.shape[1] + self.padding * 2
@@ -40,6 +42,14 @@ class ConvolutionLayer:
             inputs_padded[s, self.padding:w_pad-self.padding, self.padding:h_pad-self.padding] = inputs[s, :, :]
 
         return inputs_padded
+    
+    def update_weights(self, learn_rate, momentum):
+        self.weight -= learn_rate * self.dw
+        self.bias -= learn_rate * self.db
+
+        # Reset error
+        self.dw = np.zeros((self.nb_filter, self.nb_channel, self.filter_size, self.filter_size))
+        self.db = np.zeros((self.nb_filter))
     
     def forward(self, inputs):
         w, h = inputs.shape[1], inputs.shape[2]
@@ -56,6 +66,27 @@ class ConvolutionLayer:
                     featureMap[k, i, j] = np.sum(recField * self.weight[k, :, :, :] + self.bias[k])
         
         return self.detector(featureMap)
+
+    def backward(self, prev_errors):
+        dx = np.zeros(self.inputs.shape)
+        dw = np.zeros(self.weight.shape)
+        db = np.zeros(self.bias.shape)
+
+        f, w, h = prev_errors.shape
+
+        for k in range(f):
+            db[k] = np.sum(prev_errors[k, :, :])
+        
+        for k in range(f):
+            for i in range(w):
+                for j in range(h):
+                    dw[k, :, :, :] += prev_errors[k, i, j] * self.inputs[:, i:i+self.filter_size, j:j+self.filter_size]
+                    dx[:, i:i+self.filter_size, j:j+self.filter_size] += prev_errors[k, i, j] * self.weight[k, :, :, :]
+
+        self.dw += dw
+        self.db += db
+        
+        return self.detector(dx)
 
     def detector(self,input):
         return np.maximum(input, 0)
@@ -97,15 +128,15 @@ class Pooling:
         F, W, H = self.input.shape
         dx = np.zeros(self.input.shape)
         for i in range(0, F):
-            for j in range(0, W, self._filter_size):
-                for k in range(0, H, self._filter_size):
-                    st = np.argmax(self.input[i, j : j + self._filter_size, k : k + self._filter_size])
-                    (idx, idy) = np.unravel_index(st, (self._filter_size, self._filter_size))
+            for j in range(0, W, self.filter_size):
+                for k in range(0, H, self.filter_size):
+                    st = np.argmax(self.input[i, j : j + self.filter_size, k : k + self.filter_size])
+                    (idx, idy) = np.unravel_index(st, (self.filter_size, self.filter_size))
                     if ((j + idx) < W and (k + idy) < H):
-                        dx[i, j + idx, k + idy] = prev_errors[i, int(j / self._filter_size) % prev_errors.shape[1], int(k / self._filter_size) % prev_errors.shape[2]]
+                        dx[i, j + idx, k + idy] = prev_errors[i, int(j / self.filter_size) % prev_errors.shape[1], int(k / self.filter_size) % prev_errors.shape[2]]
         return dx
     
-    def update_weights(self, learning_rate):
+    def update_weights(self, learn_rate, momentum):
         # Todo
         pass
 
