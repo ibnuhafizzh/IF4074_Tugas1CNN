@@ -8,6 +8,7 @@ class DenseLayer:
         self.activation = activation
         self.bias = np.zeros(n_unit)
         self.weight = np.random.randn(n_unit)
+        self.deltaW = np.zeros((self.n_unit))
 
     def forward(self,inputs):
         self.input = inputs
@@ -28,9 +29,10 @@ class DenseLayer:
         return sigm * (1 - sigm)
     
     def d_relu(self,inputs):
-        inputs[inputs >= 0] = 1
-        inputs[inputs < 0] = 0
-        return inputs
+        f = lambda x: 1 if x>=0 else 0
+        # inputs[inputs >= 0] = 1
+        # inputs[inputs < 0] = 0
+        return f(inputs)
 
     def d_act_funct(self,activation,inputs):
         if (activation=='sigmoid'):
@@ -178,7 +180,7 @@ class FlattenLayer:
         pass
 
     def forward(self, inputs):
-        self.channel, self.width, self.height = inputs.shape()
+        self.channel, self.width, self.height = inputs.shape
         output = inputs.flatten()
         return output
     

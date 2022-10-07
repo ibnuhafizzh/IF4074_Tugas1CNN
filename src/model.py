@@ -16,8 +16,8 @@ class Model:
         self.self.layers = temp.copy()
     
     def fit(self,features, target, batch_size, epoch, learn_rate, momentum=1):
-        y = np.array()
-        output = np.array()
+        y = np.array([])
+        output = np.array([])
 
         for e in range(epoch):
             print("Epoch: ", e+1)
@@ -27,7 +27,7 @@ class Model:
                 current_idx = (batch_size * e + b) % len(features)
                 for layer in self.layers:
                     res = layer.forward(features[current_idx])
-                current_output = res[len(res) - 1][0]
+                current_output = res[len(res) - 1]
                 current_y = target[current_idx]
                 
                 dE = np.array([current_y - current_output]) * -1
