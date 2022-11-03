@@ -193,6 +193,44 @@ class FlattenLayer:
     def update_weights(self, learning_rate, momentum):
         pass
 
+class LSTMLayer:
+    def __init__(self, input_size, n_cells):
+        self.input_size = input_size
+        self.n_cells = n_cells
+
+        self.c_prev = np.zeros((self.n_cell, 1))
+        self.h_prev = np.zeros((self.n_cell, 1))
+
+        #parameternya dijadiin class
+        self.input_param = self.LSTMParameter(self.n_cells, self.input_size)
+        self.cell_param = self.LSTMParameter(self.n_cells, self.input_size)
+        self.forget_param = self.LSTMParameter(self.n_cells, self.input_size)
+        self.output_param = self.LSTMParameter(self.n_cells, self.input_size)
+        self.training_param = {}
+    
+    class LSTMParameter:
+        def __init__(self,n_cell,size):
+            self.u = np.random.rand(n_cell, size)
+            self.w = np.random.rand(n_cell, size)
+            self.b = np.random.rand(n_cell, size)
+
+
+    def forward(self, inputs):
+        pass
+    
+    def cellState(self,timestep):
+        self.parameter['C'+str(t)] = np.multiply(self.parameter['f'+str(t)], self.c_prev) + np.multiply(self.parameter['i'+str(t)], self.parameter['CFlag'+str(t)])
+        pass
+
+    def backward(self, inputs):
+        # engga ada di spek
+        pass
+
+    def update_weights(self, learning_rate, momentum):
+        # engga ada di spek
+        pass
+
+
 if __name__ == "__main__":
     # for test
     test = []
