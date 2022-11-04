@@ -204,7 +204,7 @@ class LSTMLayer:
         self.c_prev = np.zeros((self.n_cell, 1))
         self.h_prev = np.zeros((self.n_cell, 1))
 
-        self.sigmoid = np.vectorize(sigmoid) # allow function to receive input in form of vector
+        self.sigmoid = np.vectorize(common.sigmoid) # allow function to receive input in form of vector
 
 
         #parameternya dijadiin class
@@ -222,11 +222,19 @@ class LSTMLayer:
 
 
     def forgetGate(self, timestep):
-        self.parameter['f'+str(timestep)] = self.sigmoid(
-                np.dot(self.LSTMParameter(self.n_cells, self.input_size).u, self.x[timestep]) + 
-                np.dot(self.LSTMParameter(self.n_cells, self.input_size).w, self.h_prev) + 
-                self.LSTMParameter(self.n_cells, self.input_size).b
+        self.training_param['f'+str(timestep)] = self.sigmoid(
+                np.dot(self.forget_param.u, self.x[timestep]) + 
+                np.dot(self.forget_param.w, self.h_prev) + 
+                self.forget_param.b
             )
+
+    def outputGate(self, timestep):
+        self.training_param['o'+str(timestep)] = self.sigmoid(
+                np.dot(self.output_param.u, self.x[timestep]) + 
+                np.dot(self.output_param.w, self.h_prev) + 
+                self.output_param.b
+            )
+        self.training_param['h'+str(timestep)] = np.multiply(self.training_param['o'+str(timestep)], np.tanh(self.training_param['C'+str(timestep)]))
 
     def forward(self, inputs):
         pass
