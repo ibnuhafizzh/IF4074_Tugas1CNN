@@ -1,5 +1,6 @@
 import numpy as np
 import common
+from common import sigmoid, relu
 
 
 class DenseLayer:
@@ -198,8 +199,13 @@ class LSTMLayer:
         self.input_size = input_size
         self.n_cells = n_cells
 
+        self.x = [[]] # array of array
+
         self.c_prev = np.zeros((self.n_cell, 1))
         self.h_prev = np.zeros((self.n_cell, 1))
+
+        self.sigmoid = np.vectorize(sigmoid) # allow function to receive input in form of vector
+
 
         #parameternya dijadiin class
         self.input_param = self.LSTMParameter(self.n_cells, self.input_size)
@@ -214,6 +220,13 @@ class LSTMLayer:
             self.w = np.random.rand(n_cell, size)
             self.b = np.random.rand(n_cell, size)
 
+
+    def forgetGate(self, timestep):
+        self.parameter['f'+str(timestep)] = self.sigmoid(
+                np.dot(self.LSTMParameter(self.n_cells, self.input_size).u, self.x[timestep]) + 
+                np.dot(self.LSTMParameter(self.n_cells, self.input_size).w, self.h_prev) + 
+                self.LSTMParameter(self.n_cells, self.input_size).b
+            )
 
     def forward(self, inputs):
         pass
