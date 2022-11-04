@@ -201,24 +201,24 @@ class LSTMLayer:
 
         self.x = [[]] # array of array
 
-        self.c_prev = np.zeros((self.n_cell, 1))
-        self.h_prev = np.zeros((self.n_cell, 1))
+        self.c_prev = np.zeros((1))
+        self.h_prev = np.zeros((1))
 
         self.sigmoid = np.vectorize(common.sigmoid) # allow function to receive input in form of vector
 
 
         #parameternya dijadiin class
-        self.input_param = self.LSTMParameter(self.n_cells, self.input_size)
-        self.cell_param = self.LSTMParameter(self.n_cells, self.input_size)
-        self.forget_param = self.LSTMParameter(self.n_cells, self.input_size)
-        self.output_param = self.LSTMParameter(self.n_cells, self.input_size)
+        self.input_param = self.LSTMParameter(self.input_size)
+        self.cell_param = self.LSTMParameter(self.input_size)
+        self.forget_param = self.LSTMParameter(self.input_size)
+        self.output_param = self.LSTMParameter(self.input_size)
         self.training_param = {}
     
     class LSTMParameter:
-        def __init__(self,n_cell,size):
-            self.u = np.random.rand(n_cell, size)
-            self.w = np.random.rand(n_cell, size)
-            self.b = np.random.rand(n_cell, size)
+        def __init__(self,size):
+            self.u = np.random.rand(size)
+            self.w = np.random.rand(1)
+            self.b = np.random.rand(1)
 
 
     def forgetGate(self, timestep):
@@ -229,14 +229,25 @@ class LSTMLayer:
             )
 
     def outputGate(self, timestep):
+        ux = np.dot(self.output_param.u, self.x)
+        wh = np.dot(self.output_param.w, self.h_prev)
         self.training_param['o'+str(timestep)] = self.sigmoid(
-                np.dot(self.output_param.u, self.x[timestep]) + 
-                np.dot(self.output_param.w, self.h_prev) + 
+                ux[timestep] + 
+                wh + 
                 self.output_param.b
             )
         self.training_param['h'+str(timestep)] = np.multiply(self.training_param['o'+str(timestep)], np.tanh(self.training_param['C'+str(timestep)]))
 
     def forward(self, inputs):
+        # self.x = inputs
+        # for i in range(self.n_cells):
+        #     self.forgetGate(i)
+        #     self.inputGate(i)
+        #     self.cellState(i)
+        #     self.outputGate(i)
+
+        #     self.c_prev = self.training_param['C'+str(i)]
+        #     self.h_prev = self.training_param['h'+str(i)]
         pass
     
     def cellState(self,timestep):
