@@ -251,8 +251,18 @@ class LSTMLayer:
         pass
     
     def cellState(self,timestep):
-        self.parameter['C'+str(t)] = np.multiply(self.parameter['f'+str(t)], self.c_prev) + np.multiply(self.parameter['i'+str(t)], self.parameter['CFlag'+str(t)])
-        pass
+        self.parameter['Caccent'+str(timestep)] = np.tanh(
+            np.dot(self.cell_param.u, self.x[timestep]) + np.dot(self.cell_param.w, self.h_prev) + self.cell_param.b)
+        self.parameter['C'+str(timestep)] = (np.multiply(
+            self.parameter['f'+str(timestep)], self.c_prev) + 
+            np.multiply(self.parameter['i'+str(timestep)], self.parameter['Caccent'+str(timestep)]))
+
+    def inputGate(self,timestep):
+        self.training_param['i' + str(timestep)] = self.sigmoid(
+            np.matmul(self.input_param.u,self.x[timestep]) 
+            + np.multiply(self.input_param.w,self.h_prev[timestep]) 
+            + self.input_param.b)
+
 
     def backward(self, inputs):
         # engga ada di spek
