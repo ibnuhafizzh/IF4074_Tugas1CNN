@@ -28,6 +28,8 @@ class DenseLayer:
         if self.activation == 'sigmoid':
             matrixsigmoid = np.vectorize(common.sigmoid)
             self.output = matrixsigmoid(multisum)
+        elif self.activation == 'linear':
+            self.output = multisum
         else:
             self.output = np.maximum(multisum, 0)
         return self.output
@@ -199,8 +201,8 @@ class LSTMLayer:
         self.input_size = input_size
         self.n_cells = n_cells
 
-        self.c_prev = np.zeros(n_cells,1)
-        self.h_prev = np.zeros(n_cells,1)
+        self.c_prev = np.zeros((n_cells,1))
+        self.h_prev = np.zeros((n_cells,1))
 
         self.sigmoid = np.vectorize(common.sigmoid) # allow function to receive input in form of vector
 
@@ -232,11 +234,11 @@ class LSTMLayer:
             + self.input_param.b)
     
     def cellState(self,timestep):
-        self.parameter['Caccent'+str(timestep)] = np.tanh(
+        self.training_param['Caccent'+str(timestep)] = np.tanh(
             np.dot(self.cell_param.u, self.x[timestep]) + np.dot(self.cell_param.w, self.h_prev) + self.cell_param.b)
-        self.parameter['C'+str(timestep)] = (np.multiply(
-            self.parameter['f'+str(timestep)], self.c_prev) + 
-            np.multiply(self.parameter['i'+str(timestep)], self.parameter['Caccent'+str(timestep)]))
+        self.training_param['C'+str(timestep)] = (np.multiply(
+            self.training_param['f'+str(timestep)], self.c_prev) + 
+            np.multiply(self.training_param['i'+str(timestep)], self.training_param['Caccent'+str(timestep)]))
 
     def outputGate(self, timestep):
         self.training_param['o'+str(timestep)] = self.sigmoid(
