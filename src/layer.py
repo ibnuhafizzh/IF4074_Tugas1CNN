@@ -199,26 +199,23 @@ class LSTMLayer:
         self.input_size = input_size
         self.n_cells = n_cells
 
-        self.x = [[]] # array of array
-
-        self.c_prev = np.zeros((1))
-        self.h_prev = np.zeros((1))
+        self.c_prev = np.zeros(n_cells,1)
+        self.h_prev = np.zeros(n_cells,1)
 
         self.sigmoid = np.vectorize(common.sigmoid) # allow function to receive input in form of vector
 
-
         #parameternya dijadiin class
-        self.input_param = self.LSTMParameter(self.input_size)
-        self.cell_param = self.LSTMParameter(self.input_size)
-        self.forget_param = self.LSTMParameter(self.input_size)
-        self.output_param = self.LSTMParameter(self.input_size)
+        self.input_param = self.LSTMParameter(self.input_size, self.n_cells)
+        self.cell_param = self.LSTMParameter(self.input_size, self.n_cells)
+        self.forget_param = self.LSTMParameter(self.input_size, self.n_cells)
+        self.output_param = self.LSTMParameter(self.input_size, self.n_cells)
         self.training_param = {}
     
     class LSTMParameter:
-        def __init__(self,size):
-            self.u = np.random.rand(size)
-            self.w = np.random.rand(1)
-            self.b = np.random.rand(1)
+        def __init__(self,size,n_cells):
+            self.u = np.random.rand(n_cells, size)
+            self.w = np.random.rand(n_cells)
+            self.b = np.random.rand(n_cells)
 
 
     def forgetGate(self, timestep):
