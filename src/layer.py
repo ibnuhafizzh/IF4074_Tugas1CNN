@@ -228,27 +228,11 @@ class LSTMLayer:
                 self.forget_param.b
             )
 
-    def outputGate(self, timestep):
-        ux = np.dot(self.output_param.u, self.x)
-        wh = np.dot(self.output_param.w, self.h_prev)
-        self.training_param['o'+str(timestep)] = self.sigmoid(
-                ux[timestep] + 
-                wh + 
-                self.output_param.b
-            )
-        self.training_param['h'+str(timestep)] = np.multiply(self.training_param['o'+str(timestep)], np.tanh(self.training_param['C'+str(timestep)]))
-
-    def forward(self, inputs):
-        # self.x = inputs
-        # for i in range(self.n_cells):
-        #     self.forgetGate(i)
-        #     self.inputGate(i)
-        #     self.cellState(i)
-        #     self.outputGate(i)
-
-        #     self.c_prev = self.training_param['C'+str(i)]
-        #     self.h_prev = self.training_param['h'+str(i)]
-        pass
+    def inputGate(self,timestep):
+        self.training_param['i' + str(timestep)] = self.sigmoid(
+            np.matmul(self.input_param.u,self.x[timestep]) 
+            + np.multiply(self.input_param.w,self.h_prev[timestep]) 
+            + self.input_param.b)
     
     def cellState(self,timestep):
         self.parameter['Caccent'+str(timestep)] = np.tanh(
@@ -257,12 +241,27 @@ class LSTMLayer:
             self.parameter['f'+str(timestep)], self.c_prev) + 
             np.multiply(self.parameter['i'+str(timestep)], self.parameter['Caccent'+str(timestep)]))
 
-    def inputGate(self,timestep):
-        self.training_param['i' + str(timestep)] = self.sigmoid(
-            np.matmul(self.input_param.u,self.x[timestep]) 
-            + np.multiply(self.input_param.w,self.h_prev[timestep]) 
-            + self.input_param.b)
+    def outputGate(self, timestep):
+        self.training_param['o'+str(timestep)] = self.sigmoid(
+                np.dot(self.output_param.u, self.x[timestep]) + 
+                np.dot(self.output_param.w, self.h_prev) + 
+                self.output_param.b
+            )
+        self.training_param['h'+str(timestep)] = np.multiply(self.training_param['o'+str(timestep)], np.tanh(self.training_param['C'+str(timestep)]))
+    
+    def forward(self, inputs):
+        self.x = inputs
+        for i in range(self.n_cells):
+            self.forgetGate(i)
+            self.inputGate(i)
+            self.cellState(i)
+            self.outputGate(i)
 
+            self.c_prev = self.training_param['C'+str(i)]
+            self.h_prev = self.training_param['h'+str(i)]
+        
+        output = self.training_param['h'+str(self.n_cells-1)]
+        return output
 
     def backward(self, inputs):
         # engga ada di spek
